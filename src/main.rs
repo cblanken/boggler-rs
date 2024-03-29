@@ -1,9 +1,12 @@
 use clap::Parser;
 use std::error::Error;
+use std::fs;
 use std::path::PathBuf;
 
 pub mod board;
 use board::BoggleBoard;
+pub mod dictionary;
+use dictionary::{Trie, WordDictionary};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -21,12 +24,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
     // Load files
-    println!("{:?}", args.board_file);
+    let board = BoggleBoard::build(&args.board_file);
+    println!("> Loaded board file: {:?}", args.board_file);
 
-    println!("{:?}", args.dict_file);
+    let dict_file = fs::read_to_string(&args.dict_file)
+        .expect(format!("Could not read file: {:?}", args.dict_file).as_str());
 
-    let board = BoggleBoard::read_board_file(args.board_file);
-    dbg!(board.unwrap());
+    let dict = dict_file.split_whitespace().collect::<Vec<&str>>();
+
+    println!(
+        "> Loaded {} word(s) from dictionary file: {:?}",
+        dict.len(),
+        args.dict_file
+    );
+
+    Trie::build(dict.into_iter(), 16);
 
     Ok(())
 }
