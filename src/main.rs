@@ -6,7 +6,7 @@ use std::path::PathBuf;
 pub mod board;
 use board::BoggleBoard;
 pub mod dictionary;
-use dictionary::{Trie, WordDictionary};
+use dictionary::{ArenaTrie, WordTree};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -30,15 +30,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let dict_file = fs::read_to_string(&args.dict_file)
         .expect(format!("Could not read file: {:?}", args.dict_file).as_str());
 
-    let dict = dict_file.split_whitespace().collect::<Vec<&str>>();
+    let dict = dict_file.split_whitespace().map(|w| w.chars());
 
-    println!(
-        "> Loaded {} word(s) from dictionary file: {:?}",
-        dict.len(),
-        args.dict_file
-    );
+    println!("> Loaded words from dictionary file: {:?}", args.dict_file);
 
-    Trie::build(dict.into_iter(), 16);
+    let mut trie = ArenaTrie::default();
+    trie = ArenaTrie::build(trie, dict);
+
+    dbg!(trie.find_word("aardvark".to_string().chars()));
 
     Ok(())
 }
