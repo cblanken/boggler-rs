@@ -34,9 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("> Loaded words from dictionary file: {:?}", args.dict_file);
 
-    let mut trie = ArenaTrie::default();
-    trie = ArenaTrie::build(trie, dict);
-
+    let trie = ArenaTrie::build(dict);
     dbg!(trie.find_word("aardvark".to_string().chars()));
 
     Ok(())
