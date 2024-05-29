@@ -17,7 +17,7 @@ impl Pos {
 /// Wrapper for collection of cells in board
 type BoardData = Vec<Vec<String>>;
 
-/// Model of a Boggle board
+/// Boggle board data
 pub struct BoggleBoard {
     height: usize,
     width: usize,
