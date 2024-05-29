@@ -6,7 +6,7 @@ use std::path::PathBuf;
 pub mod board;
 use board::BoggleBoard;
 pub mod dictionary;
-use dictionary::{ArenaTrie, WordTree};
+use dictionary::{ArenaTrie, HashTrie, WordTree};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -34,7 +34,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("> Loaded words from dictionary file: {:?}", args.dict_file);
 
-    let trie = ArenaTrie::build(dict);
+    // let trie = ArenaTrie::build(dict);
+    let trie = HashTrie::build(dict);
     dbg!(trie.find_word("aardvark".to_string().chars()));
 
     Ok(())
