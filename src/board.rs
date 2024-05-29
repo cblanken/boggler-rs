@@ -1,6 +1,8 @@
-use std::fs::read_to_string;
-use std::io;
-use std::path::PathBuf;
+use std::{fmt, fs::read_to_string, io, path::PathBuf};
+use tabled::{
+    builder::Builder,
+    settings::{object::Rows, Alignment, Style},
+};
 
 /// A position on a 2D board
 struct Pos {
@@ -18,10 +20,29 @@ impl Pos {
 type BoardData = Vec<Vec<String>>;
 
 /// Boggle board data
+#[derive(Debug)]
 pub struct BoggleBoard {
     height: usize,
     width: usize,
     board: BoardData,
+}
+
+impl fmt::Display for BoggleBoard {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut builder = Builder::default();
+
+        for row in 0..self.height {
+            builder.push_record(&self.board[row])
+        }
+
+        let table = builder
+            .build()
+            .with(Style::modern_rounded())
+            .modify(Rows::new(0..), Alignment::center())
+            .to_string();
+
+        write!(f, "{}", table)
+    }
 }
 
 impl BoggleBoard {
