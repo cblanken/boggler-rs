@@ -42,7 +42,6 @@ where
 #[derive(Debug, Default)]
 pub struct HashTrie<T> {
     root: HashNode<T>,
-    size: usize,
 }
 
 impl<T> HashTrie<T>
@@ -50,13 +49,22 @@ where
     T: Copy + PartialEq + Eq + Default + Hash,
 {
     fn size(&self) -> usize {
-        return self.size;
+        self.size_of_subtree(&self.root) + 1
+    }
+
+    fn size_of_subtree(&self, node: &HashNode<T>) -> usize {
+        let mut node_cnt = node.children.len();
+
+        for n in node.children.values() {
+            node_cnt += self.size_of_subtree(n);
+        }
+
+        return node_cnt;
     }
 
     fn default() -> Self {
         HashTrie {
             root: HashNode::default(),
-            size: 1,
         }
     }
 }
@@ -112,4 +120,54 @@ where
     }
 }
 
-pub struct RadixTrie {}
+#[cfg(test)]
+mod hash_trie_tests {
+    use super::*;
+    use crate::HashTrie;
+
+    #[test]
+    fn test_size() {
+        let trie = HashTrie::build(
+            vec![
+                "aardvark".to_string().chars(),
+                "aardvarks".to_string().chars(),
+                "aardwolves".to_string().chars(),
+                "boarding".to_string().chars(),
+            ]
+            .into_iter(),
+        );
+
+        assert_eq!(24, trie.size())
+    }
+
+    #[test]
+    fn test_find() {
+        let trie = HashTrie::build(
+            vec![
+                "aardvark".to_string().chars(),
+                "aardvarks".to_string().chars(),
+                "aardwolves".to_string().chars(),
+                "abandons".to_string().chars(),
+            ]
+            .into_iter(),
+        );
+
+        assert!(trie.find_word("a".to_string().chars()).is_none());
+        assert!(trie.find_word("aardvar".to_string().chars()).is_none());
+        assert!(trie.find_word("abandoning".to_string().chars()).is_none());
+        assert!(trie.find_word("aardvark".to_string().chars()).is_some());
+        assert!(trie.find_word("abandons".to_string().chars()).is_some());
+    }
+
+    #[test]
+    fn test_add_word() {
+        let mut trie = HashTrie::build(vec!["a".to_string().chars()].into_iter());
+        assert_eq!(2, trie.size());
+
+        trie.add_word("bat".to_string().chars());
+        assert_eq!(5, trie.size());
+
+        trie.add_word("and".to_string().chars());
+        assert_eq!(7, trie.size());
+    }
+}
