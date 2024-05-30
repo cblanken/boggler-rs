@@ -1,4 +1,4 @@
-use boggler_rs::WordTree;
+// use boggler_rs::WordTree;
 use clap::Parser;
 use std::error::Error;
 use std::fs;
@@ -7,11 +7,10 @@ use std::path::PathBuf;
 pub mod board;
 use board::BoggleBoard;
 
-pub mod hash_trie;
-use hash_trie::HashTrie;
-
-pub mod arena_trie;
-use arena_trie::ArenaTrie;
+pub mod tries;
+use tries::arena_trie::ArenaTrie;
+use tries::hash_trie::HashTrie;
+use tries::traits::WordTree;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -39,9 +38,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("> Loaded words from dictionary file: {:?}", args.dict_file);
 
+    println!("{}", board);
     // let arena_trie = ArenaTrie::build(dict);
-    let hash_trie = HashTrie::build(dict);
-    dbg!(hash_trie.find_word("aardvark".to_string().chars()));
+    let lookup_dict = HashTrie::build(dict);
 
     Ok(())
 }

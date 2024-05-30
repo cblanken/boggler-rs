@@ -1,4 +1,5 @@
-use boggler_rs::WordTree;
+use crate::tries::enums::NodeType;
+use crate::tries::traits::{TrieNode, WordTree};
 use std::fmt::Debug;
 
 const MAX_BRANCHING_FACTOR: usize = 26;
@@ -34,6 +35,15 @@ where
 
     fn is_empty(&self) -> bool {
         self.children.is_empty()
+    }
+}
+
+impl<T> TrieNode<T> for ArenaNode<T>
+where
+    T: PartialEq + Copy,
+{
+    fn value(&self) -> T {
+        self.value
     }
 }
 
@@ -118,7 +128,7 @@ where
         return trie;
     }
 
-    fn find_word(&self, word: U) -> Option<Vec<T>> {
+    fn find_word(&self, word: U) -> Option<NodeType<T>> {
         let mut matching_word: Vec<T> = Vec::with_capacity(MAX_WORD_LEN);
 
         let mut prev_idx = 0;
@@ -142,11 +152,9 @@ where
             }
         }
 
-        // Confirm final matching node is marked as a completed node
-        if self.arena[curr_idx].is_word {
-            Some(matching_word)
-        } else {
-            None
+        match self.arena[curr_idx].is_word {
+            true => Some(NodeType::CompleteWord(self.arena[curr_idx].value())),
+            false => Some(NodeType::IncompleteWord(self.arena[curr_idx].value())),
         }
     }
 
@@ -169,7 +177,6 @@ where
 #[cfg(test)]
 mod arena_trie_tests {
     use super::*;
-    use crate::ArenaTrie;
 
     #[test]
     fn test_size() {
@@ -193,16 +200,37 @@ mod arena_trie_tests {
                 "aardvark".to_string().chars(),
                 "aardvarks".to_string().chars(),
                 "aardwolves".to_string().chars(),
+                "abandon".to_string().chars(),
                 "abandons".to_string().chars(),
             ]
             .into_iter(),
         );
 
-        assert!(trie.find_word("a".to_string().chars()).is_none());
-        assert!(trie.find_word("aardvar".to_string().chars()).is_none());
+        assert!(trie
+            .find_word("a".to_string().chars())
+            .is_some_and(|nt| match nt {
+                NodeType::IncompleteWord('a') => true,
+                _ => false,
+            }));
+        assert!(trie
+            .find_word("aardvar".to_string().chars())
+            .is_some_and(|nt| match nt {
+                NodeType::IncompleteWord('r') => true,
+                _ => false,
+            }));
+        assert!(trie
+            .find_word("aardvark".to_string().chars())
+            .is_some_and(|nt| match nt {
+                NodeType::CompleteWord('k') => true,
+                _ => false,
+            }));
+        assert!(trie
+            .find_word("abandons".to_string().chars())
+            .is_some_and(|nt| match nt {
+                NodeType::CompleteWord('s') => true,
+                _ => false,
+            }));
         assert!(trie.find_word("abandoning".to_string().chars()).is_none());
-        assert!(trie.find_word("aardvark".to_string().chars()).is_some());
-        assert!(trie.find_word("abandons".to_string().chars()).is_some());
     }
 
     #[test]
