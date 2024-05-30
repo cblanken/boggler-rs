@@ -7,4 +7,9 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.3", features = ["derive"] }
+criterion = "0.5.1"
 tabled = "0.15.0"
+
+[[bench]]
+name = "trie_benchmark"
+harness = false
